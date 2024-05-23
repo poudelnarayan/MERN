@@ -13,7 +13,7 @@ const Users = () => {
     {
       id: "u2",
       name: "Manuel Lorenz",
-      image: "https://images.pexels.com/photos/91227/pexels-photo-839011.jpeg",
+      image: "https://images.pexels.com/photos/91227/pexels-photo-91227.jpeg",
       places: 3,
     },
     {
