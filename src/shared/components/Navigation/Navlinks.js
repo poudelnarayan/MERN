@@ -5,7 +5,7 @@ import { NavLink } from "react-router-dom/cjs/react-router-dom.min";
 
 const NavLinks = (props) => {
   return (
-    <ul className="nav-links">
+    <ul className="nav-links" >
       <li>
         <NavLink to="/" exact>
           All Users
