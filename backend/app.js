@@ -9,6 +9,12 @@ app.use(bodyParser.json());
 
 app.use("/api/places", placesRoutes); // => /api/places/..
 
+app.use((req, res, next) => {
+  const error = new Error("Could not find this route.");
+  error.code = 404;
+  throw error;
+});
+
 app.use((error, req, res, next) => {
   if (res.headersSent) {
     return next(error);
