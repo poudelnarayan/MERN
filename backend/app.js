@@ -1,6 +1,9 @@
 const express = require("express");
 const bodyParser = require("body-parser");
+const mongoose = require("mongoose");
+require("dotenv").config();
 
+const url = `mongodb+srv://${process.env.MONGO_USERNAME}:${process.env.MONGO_PASSWORD}@${process.env.MONGO_CLUSTER}.mongodb.net/places?retryWrites=true&w=majority&appName=Cluster0`;
 const placesRoutes = require("./routes/places-routes");
 const userRoutes = require("./routes/users-routes");
 
@@ -25,4 +28,12 @@ app.use((error, req, res, next) => {
   res.json({ message: error.message || "An unknown error occurred!" });
 });
 
-app.listen(5000);
+mongoose
+  .connect(url)
+  .then(() => {
+    console.log("Connected to the database!");
+    app.listen(5000);
+  })
+  .catch((err) => {
+    console.log(err);
+  });
