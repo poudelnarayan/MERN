@@ -202,8 +202,9 @@ const deletePlace = async (req, res, next) => {
   try {
     place = await Place.findById(placeId).populate("creator");
   } catch (err) {
+    console.error("Error finding place:", err);
     return next(
-      new HttpError("Something went wrong, could not delete place.", 500)
+      new HttpError("Something went wrong, could not find place.", 500)
     );
   }
 
@@ -215,16 +216,23 @@ const deletePlace = async (req, res, next) => {
   try {
     const session = await mongo.startSession();
     session.startTransaction();
-    await place.remove({ session: session });
-    place.creator.places.pull(place);
-    await place.creator.save({ session: session });
+
+    await Place.deleteOne({ _id: placeId }, { session });
+
+    place.creator.places.pull(place._id);
+    await place.creator.save({ session });
+
     await session.commitTransaction();
     session.endSession();
   } catch (err) {
+    await session.abortTransaction();
+    session.endSession();
+    console.error("Error during transaction:", err);
     return next(
       new HttpError("Something went wrong, could not delete place.", 500)
     );
   }
+
   // If the place is found and deleted, send a success response
   res.status(200).json({ message: "Deleted place." });
 };
