@@ -36,6 +36,21 @@ let DUMMY_PLACES = [
   },
 ];
 
+const getAllPlaces = async (req, res, next) => {
+  let places;
+  try {
+    places = await Place.find();
+  } catch (err) {
+    console.error("Error fetching places:", err);
+    return next(
+      new HttpError("Fetching places failed, please try again later.", 500)
+    );
+  }
+  res.json({
+    places: places.map((place) => place.toObject({ getters: true })),
+  });
+};
+
 const getPlaceById = async (req, res, next) => {
   const placeId = req.params.pid; // { pid: 'p1' }
 
@@ -185,11 +200,26 @@ const deletePlace = async (req, res, next) => {
   let place;
 
   try {
-    place = await Place.findByIdAndDelete(placeId);
-    if (!place) {
-      // If no place is found with the given ID, send a 404 error
-      return next(new HttpError("Could not find place for this id.", 404));
-    }
+    place = await Place.findById(placeId).populate("creator");
+  } catch (err) {
+    return next(
+      new HttpError("Something went wrong, could not delete place.", 500)
+    );
+  }
+
+  if (!place) {
+    // If no place is found with the given ID, send a 404 error
+    return next(new HttpError("Could not find place for this id.", 404));
+  }
+
+  try {
+    const session = await mongo.startSession();
+    session.startTransaction();
+    await place.remove({ session: session });
+    place.creator.places.pull(place);
+    await place.creator.save({ session: session });
+    await session.commitTransaction();
+    session.endSession();
   } catch (err) {
     return next(
       new HttpError("Something went wrong, could not delete place.", 500)
@@ -204,3 +234,4 @@ exports.getPlacesByUserId = getPlacesByUserId;
 exports.createPlace = createPlace;
 exports.updatePlace = updatePlace;
 exports.deletePlace = deletePlace;
+exports.getAllPlaces = getAllPlaces;
