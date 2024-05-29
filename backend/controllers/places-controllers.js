@@ -1,4 +1,5 @@
-const uuid = require("uuid");
+const fs = require("fs");
+
 const { validationResult } = require("express-validator");
 const HttpError = require("../models/http-error");
 const getCoordsForAddress = require("../util/location");
@@ -96,8 +97,7 @@ const createPlace = async (req, res, next) => {
     description,
     address,
     location: coordinates,
-    image:
-      "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c7/Empire_State_Building_from_the_Top_of_the_Rock.jpg/1024px-Empire_State_Building_from_the_Top_of_the_Rock.jpg",
+    image: req.file.path,
     creator,
   });
 
@@ -186,6 +186,8 @@ const deletePlace = async (req, res, next) => {
     return next(new HttpError("Could not find place for this id.", 404));
   }
 
+  const imagePath = place.image;
+
   try {
     const session = await mongo.startSession();
     session.startTransaction();
@@ -205,6 +207,10 @@ const deletePlace = async (req, res, next) => {
       new HttpError("Something went wrong, could not delete place.", 500)
     );
   }
+
+  fs.unlink(imagePath, (err) => {
+    console.error("Error deleting image:", err);
+  });
 
   // If the place is found and deleted, send a success response
   res.status(200).json({ message: "Deleted place." });
