@@ -32,6 +32,11 @@ export const useHttpClient = () => {
         setIsLoading(false);
         return responseData;
       } catch (err) {
+        if (err.name === "AbortError") {
+          console.log("Fetch aborted");
+        } else {
+          setError(err.message || "Something went wrong!");
+        }
         setIsLoading(false);
         setError(err.message);
         throw err;
@@ -46,6 +51,7 @@ export const useHttpClient = () => {
 
   useEffect(() => {
     return () => {
+      console.log("Cleaning up activeHttpRequests");
       activeHttpRequests.current.forEach((abortCtrl) => abortCtrl.abort());
     };
   }, []);
