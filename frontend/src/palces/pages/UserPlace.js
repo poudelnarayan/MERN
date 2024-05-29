@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom/cjs/react-router-dom.min";
+import { useParams } from "react-router-dom";
 
 import PlaceList from "../components/PlaceList";
 import ErrorModal from "../../shared/components/UIElements/ErrorModal";
@@ -9,19 +9,20 @@ import { useHttpClient } from "../../shared/hooks/http-hook";
 const UserPlaces = () => {
   const [loadedPlaces, setLoadedPlaces] = useState();
   const { isLoading, error, sendRequest, clearError } = useHttpClient();
-  const userID = useParams().userId;
+
+  const userId = useParams().userId;
 
   useEffect(() => {
     const fetchPlaces = async () => {
       try {
         const responseData = await sendRequest(
-          `http://localhost:5000/api/places/user/${userID}`
+          `http://localhost:5000/api/places/user/${userId}`
         );
         setLoadedPlaces(responseData.places);
       } catch (err) {}
     };
     fetchPlaces();
-  }, [sendRequest, userID]);
+  }, [sendRequest, userId]);
 
   return (
     <React.Fragment>
