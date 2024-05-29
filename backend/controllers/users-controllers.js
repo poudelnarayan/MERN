@@ -48,7 +48,7 @@ const signup = async (req, res, next) => {
   const createdUser = new User({
     name,
     email,
-    image: "https://www.google.com",
+    image: req.file.path,
     password,
     places: [],
   });
